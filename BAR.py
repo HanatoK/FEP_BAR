@@ -34,7 +34,6 @@ def showEnsembles(ensembles, title):
     print(f'Number of windows: {len(ensembles)}')
     for i, ensemble in enumerate(ensembles):
         print(f'Samples in window {i:3d}: {len(ensemble)}')
-        #print(ensemble)
     print('=' * 80)
     print('\n')
 
@@ -62,7 +61,6 @@ def BAR(forward_deltaU, backward_deltaU, beta, maxIterations, tolerance):
         deltaA = estimateDeltaA(forward_deltaU, -1.0 * backward_deltaU, C, beta)
         C = estimateC(deltaA, len(forward_deltaU), len(backward_deltaU), beta)
         error = np.abs(C_previous - C)
-        #print(f'Tteration {iteration}: error = {error:15.7f} ; C = {C:15.7f} ; deltaA = {deltaA:15.7f}')
         if error < tolerance:
             break
         iteration = iteration + 1

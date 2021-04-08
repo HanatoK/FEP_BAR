@@ -12,8 +12,6 @@ def ensemblesFromOutput(outputfile):
         start_collecting = False
         for line in fInput:
             if line.startswith('#NEW FEP WINDOW'):
-                if ensemble:
-                    ensembles.append(np.array(ensemble))
                 ensemble = []
             if line.startswith('FepEnergy:') and start_collecting:
                 fields = line.split()
@@ -22,6 +20,8 @@ def ensemblesFromOutput(outputfile):
                 start_collecting = True
             if line.startswith('#Free energy change'):
                 start_collecting = False
+                if ensemble:
+                    ensembles.append(np.array(ensemble))
     return ensembles
 
 forward_ensembles = ensemblesFromOutput('forward-shift-long.fepout')
@@ -81,5 +81,5 @@ print(A)
 for x in deltaA:
     A += x
     print(A)
-print('ALl deltaA:')
+print('All deltaA:')
 print(deltaA)

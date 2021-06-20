@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
-
-temperature = 300.0
-boltzmann_constant = 0.0019872041
-current_beta = 1.0 / (temperature * boltzmann_constant)
+import argparse
 
 def ensemblesFromOutput(outputfile):
     ensembles = []
@@ -24,9 +21,6 @@ def ensemblesFromOutput(outputfile):
                     ensembles.append(np.array(ensemble))
     return ensembles
 
-forward_ensembles = ensemblesFromOutput('forward-shift-long.fepout')
-backward_ensembles = ensemblesFromOutput('backward-shift-long.fepout')
-
 # debug the data reading
 def showEnsembles(ensembles, title):
     print(title)
@@ -37,8 +31,6 @@ def showEnsembles(ensembles, title):
     print('=' * 80)
     print('\n')
 
-showEnsembles(forward_ensembles, 'Forward:')
-showEnsembles(backward_ensembles, 'Backward:')
 
 def Fermi(x):
     return 1.0 / (1.0 + np.exp(x))
@@ -68,16 +60,30 @@ def BAR(forward_deltaU, backward_deltaU, beta, maxIterations, tolerance):
         print(f'Warning: BAR does not converge in {maxIterations} iterations!')
     return deltaA
 
-deltaA = []
-for i, (forward_deltaU, backward_deltaU) in enumerate(zip(forward_ensembles, reversed(backward_ensembles))):
-    deltaA_i = BAR(forward_deltaU, backward_deltaU, current_beta, 10000, 1e-9)
-    deltaA.append(deltaA_i)
 
-print('BAR results:')
-A = 0
-print(A)
-for x in deltaA:
-    A += x
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--forward', type=str, help='forward fepout file')
+    parser.add_argument('--backward', type=str, help='backward fepout file')
+    parser.add_argument('--kbt', default=(300.0*0.0019872041), type=float, help='inverse temperature')
+    args = parser.parse_args()
+
+    current_beta = 1.0 / args.kbt
+    forward_ensembles = ensemblesFromOutput(args.forward)
+    backward_ensembles = ensemblesFromOutput(args.backward)
+    showEnsembles(forward_ensembles, 'Forward:')
+    showEnsembles(backward_ensembles, 'Backward:')
+
+    deltaA = []
+    for i, (forward_deltaU, backward_deltaU) in enumerate(zip(forward_ensembles, reversed(backward_ensembles))):
+        deltaA_i = BAR(forward_deltaU, backward_deltaU, current_beta, 10000, 1e-5)
+        deltaA.append(deltaA_i)
+
+    print('BAR results:')
+    A = 0
     print(A)
-print('All deltaA:')
-print(deltaA)
+    for x in deltaA:
+        A += x
+        print(A)
+    print('All deltaA:')
+    print(deltaA)
